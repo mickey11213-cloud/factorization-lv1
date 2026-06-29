@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Factor Sprint Lv1</title>
+  <style>
+    :root { color-scheme: light; --bg: #f7f3ea; --ink: #17212b; --muted: #6b7280; --panel: #ffffff; --line: #d8d1c3; --accent: #2457d6; --ok: #0f8f72; --bad: #d64d3f; --key: #263342; --shadow: 0 12px 28px rgba(24,31,42,.12); }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100%; margin: 0; }
+    body { align-items: center; background: linear-gradient(135deg, rgba(15,143,114,.14), transparent 34%), linear-gradient(315deg, rgba(36,87,214,.14), transparent 35%), var(--bg); color: var(--ink); display: flex; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; justify-content: center; min-height: 100svh; overflow: hidden; padding: env(safe-area-inset-top) 14px env(safe-area-inset-bottom); }
+    .game { display: grid; grid-template-rows: auto 1fr auto auto; gap: 10px; height: min(100svh, 820px); max-width: 430px; padding: 14px 0; width: 100%; }
+    .topbar { align-items: center; display: flex; justify-content: space-between; min-height: 44px; }
+    .brand { display: grid; gap: 2px; }
+    .title { font-size: 1rem; font-weight: 800; letter-spacing: 0; }
+    .subtitle { color: var(--muted); font-size: .76rem; font-weight: 700; }
+    .timer { align-items: baseline; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); display: flex; gap: 4px; justify-content: center; min-width: 104px; padding: 8px 10px; }
+    .timer strong { font-size: 1.5rem; font-variant-numeric: tabular-nums; line-height: 1; }
+    .timer span { color: var(--muted); font-size: .75rem; font-weight: 800; }
+    .stage { align-content: center; display: grid; gap: 10px; min-height: 0; }
+    .numbers { background: rgba(255,255,255,.78); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); height: 300px; overflow: hidden; padding: 10px; position: relative; width: 100%; }
+    .numbers::before, .numbers::after { content: ""; left: 10px; pointer-events: none; position: absolute; right: 10px; z-index: 3; }
+    .numbers::before { background: linear-gradient(var(--panel), rgba(255,255,255,0)); height: 24px; top: 10px; }
+    .numbers::after { background: linear-gradient(rgba(255,255,255,0), var(--panel)); bottom: 10px; height: 32px; }
+    .current-frame { border: 4px solid var(--accent); border-radius: 8px; box-shadow: inset 0 0 0 2px rgba(36,87,214,.1); height: 86px; left: 10px; pointer-events: none; position: absolute; right: 10px; top: 10px; z-index: 4; }
+    .number-reel { display: grid; gap: 10px; transform: translateY(0); }
+    .number-reel.roll { transform: translateY(-96px); transition: transform 55ms cubic-bezier(.2,.8,.2,1); }
+    .number-card { align-items: center; background: rgba(255,255,255,.72); border: 1px solid #ddd6c8; border-radius: 8px; color: #394150; display: grid; font-weight: 900; grid-template-rows: 18px minmax(0, 1fr); height: 86px; justify-items: center; min-width: 0; overflow: hidden; padding: 6px 8px 8px; }
+    .number-card.current { background: #fff; color: var(--accent); }
+    .number-card.next { opacity: .72; }
+    .number-card strong { align-self: center; font-size: 2.7rem; font-variant-numeric: tabular-nums; line-height: 1; max-width: 100%; overflow: visible; text-align: center; }
+    .number-card span { align-self: start; color: var(--muted); font-size: .68rem; font-weight: 800; line-height: 1; white-space: nowrap; }
+    .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); display: grid; gap: 8px; padding: 10px 14px; }
+    .status { color: var(--muted); font-size: .86rem; font-weight: 800; text-align: center; }
+    .input { align-items: center; border: 2px solid #dbe2ee; border-radius: 8px; display: flex; font-size: clamp(1.2rem, 6.2vw, 1.9rem); font-weight: 900; font-variant-numeric: tabular-nums; justify-content: center; letter-spacing: .02em; min-height: 52px; overflow: hidden; padding: 6px 10px; word-break: keep-all; }
+    .input.empty { color: #a0a8b5; letter-spacing: 0; }
+    .feedback { font-size: .9rem; font-weight: 900; min-height: 1.25em; text-align: center; }
+    .feedback.ok { color: var(--ok); }
+    .feedback.no { color: var(--bad); }
+    .keyboard { display: grid; gap: 8px; grid-template-columns: repeat(3, 1fr); }
+    button { border: 0; border-radius: 8px; color: #fff; cursor: pointer; font: inherit; font-weight: 900; min-width: 0; touch-action: manipulation; }
+    button:active { transform: translateY(1px) scale(.99); }
+    .key { background: var(--key); box-shadow: var(--shadow); font-size: clamp(1.35rem, 6.5vw, 1.9rem); min-height: 54px; }
+    .key.clear { background: var(--bad); }
+    .key.back { background: #596273; }
+    .reset { background: #263342; min-height: 44px; padding: 0 16px; width: 100%; }
+    .start-card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); display: grid; gap: 14px; max-width: 360px; padding: 22px; text-align: center; width: 100%; }
+    .start-card h2 { font-size: 1.45rem; line-height: 1.2; margin: 0; }
+    .start-card p { color: var(--muted); font-size: .95rem; font-weight: 700; line-height: 1.5; margin: 0; }
+    .start-button { background: var(--accent); min-height: 56px; padding: 0 18px; width: 100%; }
+    .overlay, .start-overlay { align-items: center; background: rgba(247,243,234,.92); display: none; inset: 0; justify-content: center; padding: 20px; position: fixed; z-index: 5; }
+    .overlay.show, .start-overlay.show { display: flex; }
+    .result { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); display: grid; gap: 14px; max-width: 390px; padding: 22px; text-align: center; width: 100%; }
+    .result h2 { font-size: 1.45rem; line-height: 1.2; margin: 0; }
+    .result-time { color: var(--accent); font-size: 3.3rem; font-weight: 900; font-variant-numeric: tabular-nums; line-height: 1; }
+    .result p { color: var(--muted); font-size: .95rem; font-weight: 700; line-height: 1.5; margin: 0; }
+    @media (max-height: 720px) { .game { gap: 8px; padding: 9px 0; } .topbar { min-height: 40px; } .numbers { height: 220px; } .current-frame, .number-card { height: 60px; } .number-reel.roll { transform: translateY(-70px); } .number-card { grid-template-rows: 14px minmax(0, 1fr); padding: 4px 8px 6px; } .number-card strong { font-size: 1.85rem; line-height: 1; } .number-card span { font-size: .6rem; } .key { min-height: 42px; } .panel { gap: 6px; padding: 8px 12px; } .input { min-height: 42px; } .reset { min-height: 40px; } }
+    @media (max-height: 600px) { body { padding-left: 10px; padding-right: 10px; } .game { gap: 6px; padding: 6px 0; } .topbar { min-height: 36px; } .timer { min-width: 92px; padding: 6px 8px; } .timer strong { font-size: 1.25rem; } .numbers { height: 190px; padding: 8px; } .numbers::before, .numbers::after { left: 8px; right: 8px; } .numbers::before { top: 8px; height: 18px; } .numbers::after { bottom: 8px; height: 24px; } .current-frame { left: 8px; right: 8px; top: 8px; } .current-frame, .number-card { height: 54px; } .number-reel { gap: 8px; } .number-reel.roll { transform: translateY(-62px); } .number-card { grid-template-rows: 1fr; padding: 4px 6px; } .number-card strong { font-size: 1.65rem; line-height: 1; } .number-card span { display: none; } .panel { gap: 4px; padding: 6px 10px; } .status, .feedback { font-size: .78rem; } .input { font-size: clamp(1rem, 5.2vw, 1.5rem); min-height: 36px; padding: 4px 8px; } .keyboard { gap: 6px; } .key { font-size: clamp(1.1rem, 5.8vw, 1.55rem); min-height: 36px; } .reset { min-height: 36px; } }
+    @media (max-height: 540px) { .game { gap: 5px; padding: 5px 0; } .subtitle { display: none; } .topbar { min-height: 32px; } .timer strong { font-size: 1.1rem; } .numbers { height: 164px; padding: 7px; } .numbers::before, .numbers::after { left: 7px; right: 7px; } .current-frame { left: 7px; right: 7px; top: 7px; } .current-frame, .number-card { height: 46px; } .number-reel { gap: 7px; } .number-reel.roll { transform: translateY(-53px); } .number-card { grid-template-rows: 1fr; padding: 3px 6px; } .number-card strong { font-size: 1.45rem; line-height: 1; } .number-card span { display: none; } .panel { gap: 3px; padding: 5px 8px; } .status, .feedback { font-size: .72rem; } .input { font-size: clamp(.95rem, 4.8vw, 1.35rem); min-height: 32px; padding: 3px 6px; } .keyboard { gap: 5px; } .key { min-height: 32px; } .reset { min-height: 32px; } }
+  </style>
+</head>
+<body>
+  <main class="game" aria-label="&#32032;&#22240;&#25968;&#20998;&#35299; Lv1">
+    <header class="topbar"><div class="brand"><div class="title">Factor Sprint</div><div class="subtitle">Lv1 / &#12493;&#12463;&#12473;&#12488;2</div></div><div class="timer" aria-live="polite"><strong id="timer">0.00</strong><span>&#31186;</span></div></header>
+    <section class="stage"><section class="numbers" id="numbers" aria-label="&#12493;&#12463;&#12473;&#12488;2"><div class="current-frame" aria-hidden="true"></div></section><section class="panel"><div class="status" id="status">&#31532;1&#21839; / 20</div><div class="input empty" id="input" aria-live="polite">&#20837;&#21147;</div><div class="feedback" id="feedback" aria-live="polite">&#32032;&#22240;&#25968;&#12434;&#20837;&#21147;</div></section></section>
+    <section class="keyboard" aria-label="&#20837;&#21147;&#12461;&#12540;&#12508;&#12540;&#12489;"><button class="key" data-key="7" type="button">7</button><button class="key" data-key="8" type="button">8</button><button class="key" data-key="9" type="button">9</button><button class="key" data-key="4" type="button">4</button><button class="key" data-key="5" type="button">5</button><button class="key" data-key="6" type="button">6</button><button class="key" data-key="1" type="button">1</button><button class="key" data-key="2" type="button">2</button><button class="key" data-key="3" type="button">3</button><button class="key back" data-key="B" type="button">B</button><button class="key" data-key="0" type="button">0</button><button class="key clear" data-key="AC" type="button">AC</button></section>
+    <button class="reset" id="resetButton" type="button">&#26032;&#12375;&#12356;20&#21839;&#12391;&#12522;&#12473;&#12479;&#12540;&#12488;</button>
+  </main>
+  <div class="start-overlay show" id="startOverlay" role="dialog" aria-modal="true" aria-labelledby="startTitle"><div class="start-card"><h2 id="startTitle">Factor Sprint Lv1</h2><p>&#12473;&#12479;&#12540;&#12488;&#12391;20&#21839;&#12479;&#12452;&#12512;&#12450;&#12479;&#12483;&#12463;&#38283;&#22987;</p><button class="start-button" id="startButton" type="button">&#12473;&#12479;&#12540;&#12488;</button></div></div>
+  <div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="resultTitle"><div class="result"><h2 id="resultTitle">&#12463;&#12522;&#12450;&#65281;</h2><div class="result-time" id="resultTime">0.00</div><p id="resultDetail"></p><button class="reset" id="againButton" type="button">&#12418;&#12358;&#19968;&#24230;&#12503;&#12524;&#12452;</button></div></div>
+  <script>
+    const totalQuestions = 20;
+    const minNumber = 10;
+    const maxNumber = 99;
+    const numbersEl = document.querySelector("#numbers");
+    const statusEl = document.querySelector("#status");
+    const feedbackEl = document.querySelector("#feedback");
+    const inputEl = document.querySelector("#input");
+    const timerEl = document.querySelector("#timer");
+    const resetButton = document.querySelector("#resetButton");
+    const startOverlay = document.querySelector("#startOverlay");
+    const startButton = document.querySelector("#startButton");
+    const overlay = document.querySelector("#overlay");
+    const resultTimeEl = document.querySelector("#resultTime");
+    const resultDetailEl = document.querySelector("#resultDetail");
+    const againButton = document.querySelector("#againButton");
+    let questionPool = [];
+    let questions = [];
+    let currentIndex = 0;
+    let inputValue = "";
+    let mistakes = 0;
+    let startedAt = 0;
+    let finishedAt = 0;
+    let timerFrame = 0;
+    let isPlaying = false;
+    let locked = true;
+    let gameStarted = false;
+    function isPrime(value) { if (value < 2) return false; if (value === 2) return true; if (value % 2 === 0) return false; const limit = Math.floor(Math.sqrt(value)); for (let divisor = 3; divisor <= limit; divisor += 2) { if (value % divisor === 0) return false; } return true; }
+    function factorize(value) { const factors = []; let rest = value; for (let divisor = 2; divisor <= rest; divisor += 1) { while (rest % divisor === 0) { factors.push(divisor); rest = rest / divisor; } } return factors; }
+    function buildQuestionPool() { const pool = []; for (let value = minNumber; value <= maxNumber; value += 1) { if (!isPrime(value)) { const factors = factorize(value); if (factors.length > 1) pool.push({ value, factors, answerLength: factors.map(String).join("").length }); } } return pool; }
+    function buildQuestions() { const list = []; let last = null; while (list.length < totalQuestions) { const next = questionPool[Math.floor(Math.random() * questionPool.length)]; if (next.value !== last) { list.push(next); last = next.value; } } return list; }
+    function canReadAsFactors(text, factors) { const used = Array(factors.length).fill(false); const factorStrings = factors.map(String); function search(position) { if (position === text.length) return used.every(Boolean); for (let i = 0; i < factorStrings.length; i += 1) { if (used[i]) continue; const factor = factorStrings[i]; if (text.slice(position, position + factor.length) === factor) { used[i] = true; if (search(position + factor.length)) return true; used[i] = false; } } return false; } return search(0); }
+    function makeCard(question, offset) { const card = document.createElement("div"); card.className = "number-card " + (offset === 0 ? "current" : "next"); const label = document.createElement("span"); label.textContent = offset === 0 ? "\u73fe\u5728\u306e\u554f\u984c" : "\u6b21\u306e\u554f\u984c"; const value = document.createElement("strong"); value.textContent = question ? String(question.value) : "-"; card.appendChild(label); card.appendChild(value); return card; }
+    function renderReel(includeExtra) { const reel = document.createElement("div"); reel.className = "number-reel"; const count = includeExtra ? 4 : 3; for (let offset = 0; offset < count; offset += 1) { const index = currentIndex + offset; if (index < totalQuestions) reel.appendChild(makeCard(questions[index], offset)); } const frame = document.createElement("div"); frame.className = "current-frame"; frame.setAttribute("aria-hidden", "true"); numbersEl.replaceChildren(reel, frame); }
+    function rollReel() { const reel = numbersEl.querySelector(".number-reel"); if (!reel) return Promise.resolve(); reel.classList.add("roll"); return new Promise((resolve) => { reel.addEventListener("transitionend", resolve, { once: true }); setTimeout(resolve, 75); }); }
+    function renderInput() { inputEl.textContent = inputValue || "\u5165\u529b"; inputEl.classList.toggle("empty", inputValue.length === 0); }
+    function updateTimer() { if (!isPlaying) return; const elapsed = (performance.now() - startedAt) / 1000; timerEl.textContent = elapsed.toFixed(2); timerFrame = requestAnimationFrame(updateTimer); }
+    function startTimer() { if (startedAt) return; startedAt = performance.now(); isPlaying = true; updateTimer(); }
+    function startGame() { if (gameStarted) return; gameStarted = true; locked = false; startOverlay.classList.remove("show"); startTimer(); showQuestion(); }
+    function showQuestion() { statusEl.textContent = "\u7b2c" + (currentIndex + 1) + "\u554f / " + totalQuestions; inputValue = ""; renderInput(); renderReel(false); }
+    function showWaitingScreen() { statusEl.textContent = "\u30b9\u30bf\u30fc\u30c8\u5f85\u3061"; inputValue = ""; renderInput(); numbersEl.replaceChildren(); }
+    function checkCurrentInput() { const question = questions[currentIndex]; if (!question) return false; if (inputValue.length === question.answerLength && canReadAsFactors(inputValue, question.factors)) return true; if (inputValue.length > question.answerLength) { feedbackEl.textContent = "B\u3067\u4fee\u6b63"; feedbackEl.className = "feedback no"; } return false; }
+    function handleKey(key) { if (!gameStarted || locked || currentIndex >= totalQuestions) return; if (key === "B") { inputValue = inputValue.slice(0, -1); renderInput(); feedbackEl.textContent = "\u7d20\u56e0\u6570\u3092\u5165\u529b"; feedbackEl.className = "feedback"; return; } if (key === "AC") { inputValue = ""; renderInput(); feedbackEl.textContent = "\u7d20\u56e0\u6570\u3092\u5165\u529b"; feedbackEl.className = "feedback"; return; } if (/^[0-9]$/.test(key) && inputValue.length < 8) { inputValue += key; renderInput(); if (checkCurrentInput()) advanceQuestion(); } }
+    async function advanceQuestion() { if (locked || currentIndex >= totalQuestions) return; locked = true; feedbackEl.textContent = "\u6b63\u89e3"; feedbackEl.className = "feedback ok"; renderReel(true); await rollReel(); currentIndex += 1; if (currentIndex >= totalQuestions) finishGame(); else showQuestion(); locked = false; }
+    function finishGame() { isPlaying = false; cancelAnimationFrame(timerFrame); finishedAt = performance.now(); const elapsed = (finishedAt - startedAt) / 1000; const penalty = mistakes * 1.5; const finalTime = elapsed + penalty; timerEl.textContent = elapsed.toFixed(2); resultTimeEl.textContent = finalTime.toFixed(2) + "\u79d2"; resultDetailEl.textContent = "\u5b9f\u30bf\u30a4\u30e0 " + elapsed.toFixed(2) + "\u79d2 / \u30df\u30b9 " + mistakes + "\u56de / \u30da\u30ca\u30eb\u30c6\u30a3 " + penalty.toFixed(1) + "\u79d2"; overlay.classList.add("show"); againButton.focus(); }
+    function resetGame() { cancelAnimationFrame(timerFrame); questionPool = buildQuestionPool(); questions = buildQuestions(); currentIndex = 0; inputValue = ""; mistakes = 0; startedAt = 0; finishedAt = 0; isPlaying = false; locked = true; gameStarted = false; timerEl.textContent = "0.00"; feedbackEl.textContent = "\u7d20\u56e0\u6570\u3092\u5165\u529b"; feedbackEl.className = "feedback"; overlay.classList.remove("show"); startOverlay.classList.add("show"); showWaitingScreen(); }
+    function bindKey(button) { const key = button.dataset.key; button.addEventListener("pointerdown", (event) => { event.preventDefault(); handleKey(key); }); button.addEventListener("click", (event) => { event.preventDefault(); if (event.detail === 0) handleKey(key); }); }
+    document.querySelectorAll("[data-key]").forEach(bindKey);
+    startButton.addEventListener("click", startGame);
+    resetButton.addEventListener("click", resetGame);
+    againButton.addEventListener("click", resetGame);
+    resetGame();
+  </script>
+</body>
+</html>
