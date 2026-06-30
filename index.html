@@ -328,6 +328,13 @@
     }
     /* end-focus-outline-reset */
 
+
+    /* pointer-button-input-fix */
+    .keyboard { touch-action: none; }
+    .key { touch-action: none; pointer-events: auto; -webkit-appearance: none; appearance: none; }
+    .key * { pointer-events: none; }
+    /* end-pointer-button-input-fix */
+
   </style>
 </head>
 <body>
@@ -383,7 +390,6 @@
     let gameStarted = false;
     let inputQueue = [];
     let processingInputQueue = false;
-    let lastTouchAt = 0;
     function isPrime(value) { if (value < 2) return false; if (value === 2) return true; if (value % 2 === 0) return false; const limit = Math.floor(Math.sqrt(value)); for (let divisor = 3; divisor <= limit; divisor += 2) { if (value % divisor === 0) return false; } return true; }
     function factorize(value) { const factors = []; let rest = value; for (let divisor = 2; divisor <= rest; divisor += 1) { while (rest % divisor === 0) { factors.push(divisor); rest = rest / divisor; } } return factors; }
     function buildQuestionPool() { const pool = []; for (let value = minNumber; value <= maxNumber; value += 1) { if (isPrime(value)) continue; const pFactors = factorize(value); if (pFactors.length < 2) continue; const n2 = Number(pFactors.map(String).join("")); if (n2 <= 9 || n2 >= 1000) continue; if (isPrime(n2)) continue; const qFactors = factorize(n2); if (qFactors.length < 2) continue; pool.push({ value, pFactors, n2, factors: qFactors, answerLength: qFactors.map(String).join("").length }); } return pool; }
@@ -409,9 +415,9 @@
     function resetGame() { cancelAnimationFrame(timerFrame); questionPool = buildQuestionPool(); questions = buildQuestions(); currentIndex = 0; inputValue = ""; inputQueue = []; processingInputQueue = false; startedAt = 0; finishedAt = 0; isPlaying = false; locked = true; gameStarted = false; timerEl.textContent = "0.00"; feedbackEl.textContent = "素因数を入力"; feedbackEl.className = "feedback"; overlay.classList.remove("show"); rulesPanel.classList.remove("show"); rulesPanel.setAttribute("aria-hidden", "true"); startOverlay.classList.add("show"); showWaitingScreen(); }
 
 
-    function keyFromPoint(x, y) { const keyboard = document.querySelector(".keyboard"); const rect = keyboard.getBoundingClientRect(); const inset = 1; if (x < rect.left - inset || x > rect.right + inset || y < rect.top - inset || y > rect.bottom + inset) return ""; const keys = [["7", "8", "9"], ["4", "5", "6"], ["1", "2", "3"], ["B", "0", "AC"]]; const clampedX = Math.min(Math.max(x, rect.left), rect.right - 0.01); const clampedY = Math.min(Math.max(y, rect.top), rect.bottom - 0.01); const column = Math.min(2, Math.max(0, Math.floor(((clampedX - rect.left) / rect.width) * 3))); const row = Math.min(3, Math.max(0, Math.floor(((clampedY - rect.top) / rect.height) * 4))); return keys[row][column]; }
+    function keyFromEvent(event) { const keyboard = document.querySelector(".keyboard"); const direct = event.target && event.target.closest ? event.target.closest("[data-key]") : null; const pointed = document.elementFromPoint(event.clientX, event.clientY); const fallback = pointed && pointed.closest ? pointed.closest("[data-key]") : null; const keyButton = direct || fallback; if (!keyButton || !keyboard.contains(keyButton)) return ""; return keyButton.dataset.key || ""; }
     function submitKeyboardKey(key) { if (!key) return; handleKey(key); }
-    function bindKeyboardSurface() { const keyboard = document.querySelector(".keyboard"); keyboard.addEventListener("touchstart", (event) => { event.preventDefault(); lastTouchAt = performance.now(); for (const touch of event.changedTouches) submitKeyboardKey(keyFromPoint(touch.clientX, touch.clientY)); }, { passive: false }); keyboard.addEventListener("pointerdown", (event) => { if (event.pointerType === "touch" || performance.now() - lastTouchAt < 350) { event.preventDefault(); return; } event.preventDefault(); submitKeyboardKey(keyFromPoint(event.clientX, event.clientY)); }, { passive: false }); keyboard.addEventListener("click", (event) => { event.preventDefault(); }, { passive: false }); }
+    function bindKeyboardSurface() { const keyboard = document.querySelector(".keyboard"); keyboard.addEventListener("pointerdown", (event) => { event.preventDefault(); submitKeyboardKey(keyFromEvent(event)); }, { passive: false }); keyboard.addEventListener("click", (event) => { event.preventDefault(); }, { passive: false }); }
     function bindKey(button) { button.addEventListener("click", (event) => event.preventDefault(), { passive: false }); }
     document.querySelectorAll("[data-key]").forEach(bindKey);
     bindKeyboardSurface();
