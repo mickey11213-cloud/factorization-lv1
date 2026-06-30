@@ -2,11 +2,11 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Factor Sprint Lv1</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>二重素因数分解</title>
   <style>
-    :root { color-scheme: light; --bg: #f7f3ea; --ink: #17212b; --muted: #6b7280; --panel: #ffffff; --line: #d8d1c3; --accent: #2457d6; --ok: #0f8f72; --bad: #d64d3f; --key: #263342; --shadow: 0 12px 28px rgba(24,31,42,.12); }
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    :root { color-scheme: light; --bg: #f6f3ec; --ink: #17212b; --muted: #687180; --panel: #ffffff; --line: #d8d1c3; --accent: #2457d6; --ok: #0f8f72; --bad: #d64d3f; --key: #263342; --shadow: 0 12px 28px rgba(24,31,42,.12); }
+    * { box-sizing: border-box; }
     html, body { height: 100%; margin: 0; }
     body { align-items: center; background: linear-gradient(135deg, rgba(15,143,114,.14), transparent 34%), linear-gradient(315deg, rgba(36,87,214,.14), transparent 35%), var(--bg); color: var(--ink); display: flex; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; justify-content: center; min-height: 100svh; overflow: hidden; padding: env(safe-area-inset-top) 14px env(safe-area-inset-bottom); }
     .game { display: grid; grid-template-rows: auto 1fr auto auto; gap: 10px; height: min(100svh, 820px); max-width: 430px; padding: 14px 0; width: 100%; }
@@ -32,7 +32,7 @@
     .number-card span { align-self: start; color: var(--muted); font-size: .68rem; font-weight: 800; line-height: 1; white-space: nowrap; }
     .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); display: grid; gap: 8px; padding: 10px 14px; }
     .status { color: var(--muted); font-size: .86rem; font-weight: 800; text-align: center; }
-    .input { align-items: center; border: 2px solid #dbe2ee; border-radius: 8px; display: flex; font-size: clamp(1.2rem, 6.2vw, 1.9rem); font-weight: 900; font-variant-numeric: tabular-nums; justify-content: center; letter-spacing: .02em; min-height: 52px; overflow: hidden; padding: 6px 10px; word-break: keep-all; }
+    .input { align-items: center; border: 2px solid #dbe2ee; border-radius: 8px; display: flex; font-size: clamp(1.05rem, 5.4vw, 1.65rem); font-weight: 900; font-variant-numeric: tabular-nums; justify-content: center; letter-spacing: .02em; min-height: 52px; overflow: hidden; padding: 6px 10px; word-break: keep-all; }
     .input.empty { color: #a0a8b5; letter-spacing: 0; }
     .feedback { font-size: .9rem; font-weight: 900; min-height: 1.25em; text-align: center; }
     .feedback.ok { color: var(--ok); }
@@ -48,30 +48,314 @@
     .start-card h2 { font-size: 1.45rem; line-height: 1.2; margin: 0; }
     .start-card p { color: var(--muted); font-size: .95rem; font-weight: 700; line-height: 1.5; margin: 0; }
     .start-button { background: var(--accent); min-height: 56px; padding: 0 18px; width: 100%; }
-    .overlay, .start-overlay { align-items: center; background: rgba(247,243,234,.92); display: none; inset: 0; justify-content: center; padding: 20px; position: fixed; z-index: 5; }
+    .overlay, .start-overlay { align-items: center; background: rgba(246,243,236,.92); display: none; inset: 0; justify-content: center; padding: 20px; position: fixed; z-index: 5; }
     .overlay.show, .start-overlay.show { display: flex; }
     .result { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); display: grid; gap: 14px; max-width: 390px; padding: 22px; text-align: center; width: 100%; }
     .result h2 { font-size: 1.45rem; line-height: 1.2; margin: 0; }
     .result-time { color: var(--accent); font-size: 3.3rem; font-weight: 900; font-variant-numeric: tabular-nums; line-height: 1; }
     .result p { color: var(--muted); font-size: .95rem; font-weight: 700; line-height: 1.5; margin: 0; }
     @media (max-height: 720px) { .game { gap: 8px; padding: 9px 0; } .topbar { min-height: 40px; } .numbers { height: 220px; } .current-frame, .number-card { height: 60px; } .number-reel.roll { transform: translateY(-70px); } .number-card { grid-template-rows: 14px minmax(0, 1fr); padding: 4px 8px 6px; } .number-card strong { font-size: 1.85rem; line-height: 1; } .number-card span { font-size: .6rem; } .key { min-height: 42px; } .panel { gap: 6px; padding: 8px 12px; } .input { min-height: 42px; } .reset { min-height: 40px; } }
-    @media (max-height: 600px) { body { padding-left: 10px; padding-right: 10px; } .game { gap: 6px; padding: 6px 0; } .topbar { min-height: 36px; } .timer { min-width: 92px; padding: 6px 8px; } .timer strong { font-size: 1.25rem; } .numbers { height: 190px; padding: 8px; } .numbers::before, .numbers::after { left: 8px; right: 8px; } .numbers::before { top: 8px; height: 18px; } .numbers::after { bottom: 8px; height: 24px; } .current-frame { left: 8px; right: 8px; top: 8px; } .current-frame, .number-card { height: 54px; } .number-reel { gap: 8px; } .number-reel.roll { transform: translateY(-62px); } .number-card { grid-template-rows: 1fr; padding: 4px 6px; } .number-card strong { font-size: 1.65rem; line-height: 1; } .number-card span { display: none; } .panel { gap: 4px; padding: 6px 10px; } .status, .feedback { font-size: .78rem; } .input { font-size: clamp(1rem, 5.2vw, 1.5rem); min-height: 36px; padding: 4px 8px; } .keyboard { gap: 6px; } .key { font-size: clamp(1.1rem, 5.8vw, 1.55rem); min-height: 36px; } .reset { min-height: 36px; } }
-    @media (max-height: 540px) { .game { gap: 5px; padding: 5px 0; } .subtitle { display: none; } .topbar { min-height: 32px; } .timer strong { font-size: 1.1rem; } .numbers { height: 164px; padding: 7px; } .numbers::before, .numbers::after { left: 7px; right: 7px; } .current-frame { left: 7px; right: 7px; top: 7px; } .current-frame, .number-card { height: 46px; } .number-reel { gap: 7px; } .number-reel.roll { transform: translateY(-53px); } .number-card { grid-template-rows: 1fr; padding: 3px 6px; } .number-card strong { font-size: 1.45rem; line-height: 1; } .number-card span { display: none; } .panel { gap: 3px; padding: 5px 8px; } .status, .feedback { font-size: .72rem; } .input { font-size: clamp(.95rem, 4.8vw, 1.35rem); min-height: 32px; padding: 3px 6px; } .keyboard { gap: 5px; } .key { min-height: 32px; } .reset { min-height: 32px; } }
+    @media (max-height: 600px) { body { padding-left: 10px; padding-right: 10px; } .game { gap: 6px; padding: 6px 0; } .topbar { min-height: 36px; } .timer { min-width: 92px; padding: 6px 8px; } .timer strong { font-size: 1.25rem; } .numbers { height: 190px; padding: 8px; } .numbers::before, .numbers::after { left: 8px; right: 8px; } .numbers::before { top: 8px; height: 18px; } .numbers::after { bottom: 8px; height: 24px; } .current-frame { left: 8px; right: 8px; top: 8px; } .current-frame, .number-card { height: 54px; } .number-reel { gap: 8px; } .number-reel.roll { transform: translateY(-62px); } .number-card { grid-template-rows: 1fr; padding: 4px 6px; } .number-card strong { font-size: 1.65rem; line-height: 1; } .number-card span { display: none; } .panel { gap: 4px; padding: 6px 10px; } .status, .feedback { font-size: .78rem; } .input { font-size: clamp(.95rem, 4.8vw, 1.35rem); min-height: 36px; padding: 4px 8px; } .keyboard { gap: 6px; } .key { font-size: clamp(1.1rem, 5.8vw, 1.55rem); min-height: 36px; } .reset { min-height: 36px; } }
+    @media (max-height: 540px) { .game { gap: 5px; padding: 5px 0; } .subtitle { display: none; } .topbar { min-height: 32px; } .timer strong { font-size: 1.1rem; } .numbers { height: 164px; padding: 7px; } .numbers::before, .numbers::after { left: 7px; right: 7px; } .current-frame { left: 7px; right: 7px; top: 7px; } .current-frame, .number-card { height: 46px; } .number-reel { gap: 7px; } .number-reel.roll { transform: translateY(-53px); } .number-card { grid-template-rows: 1fr; padding: 3px 6px; } .number-card strong { font-size: 1.45rem; line-height: 1; } .number-card span { display: none; } .panel { gap: 3px; padding: 5px 8px; } .status, .feedback { font-size: .72rem; } .input { font-size: clamp(.86rem, 4.4vw, 1.2rem); min-height: 32px; padding: 3px 6px; } .keyboard { gap: 5px; } .key { min-height: 32px; } .reset { min-height: 32px; } }
+
+    .game { grid-template-rows: auto minmax(0, 1fr) minmax(180px, 42svh) minmax(44px, 8svh); gap: 0; height: 100svh; padding: 8px 0 0; }
+    .topbar { min-height: 40px; padding-bottom: 6px; }
+    .stage { align-content: stretch; display: grid; gap: 6px; grid-template-rows: minmax(0, 1fr) auto; min-height: 0; padding-bottom: 6px; }
+    .numbers { height: auto; min-height: 0; }
+    .panel { gap: 5px; padding: 8px 12px; }
+    .status { font-size: .8rem; }
+    .input { font-size: clamp(1rem, 5vw, 1.5rem); min-height: 42px; padding: 4px 8px; }
+    .feedback { font-size: .82rem; min-height: 1.1em; }
+    .keyboard { align-self: stretch; display: grid; gap: 0; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(4, 1fr); min-height: 0; }
+    .key { border: 1px solid rgba(255,255,255,.18); border-radius: 0; box-shadow: none; font-size: clamp(1.45rem, 8vw, 2.5rem); min-height: 0; }
+    .key:nth-child(1) { border-top-left-radius: 8px; }
+    .key:nth-child(3) { border-top-right-radius: 8px; }
+    .key:nth-child(10) { border-bottom-left-radius: 0; }
+    .key:nth-child(12) { border-bottom-right-radius: 0; }
+    .reset { border-radius: 0 0 8px 8px; box-shadow: none; font-size: clamp(.9rem, 4vw, 1.05rem); min-height: 0; padding: 0 12px; }
+    @media (max-height: 720px) { .game { gap: 0; grid-template-rows: auto minmax(0, 1fr) minmax(164px, 42svh) minmax(40px, 8svh); padding: 6px 0 0; } .topbar { min-height: 36px; padding-bottom: 4px; } .stage { gap: 5px; padding-bottom: 5px; } .numbers { height: auto; } .panel { gap: 4px; padding: 6px 10px; } .input { min-height: 34px; } .keyboard { gap: 0; } .key { font-size: clamp(1.25rem, 7.5vw, 2.1rem); min-height: 0; } .reset { min-height: 0; } }
+    @media (max-height: 600px) { body { padding-left: 10px; padding-right: 10px; } .game { gap: 0; grid-template-rows: auto minmax(0, 1fr) minmax(148px, 42svh) minmax(36px, 8svh); padding: 5px 0 0; } .topbar { min-height: 32px; padding-bottom: 3px; } .title { font-size: .9rem; } .timer { min-width: 86px; padding: 5px 7px; } .timer strong { font-size: 1.15rem; } .stage { gap: 4px; padding-bottom: 4px; } .numbers { height: auto; padding: 7px; } .numbers::before, .numbers::after { left: 7px; right: 7px; } .numbers::before { top: 7px; height: 16px; } .numbers::after { bottom: 7px; height: 20px; } .current-frame { left: 7px; right: 7px; top: 7px; } .panel { gap: 3px; padding: 5px 8px; } .status, .feedback { font-size: .72rem; } .input { font-size: clamp(.86rem, 4.4vw, 1.2rem); min-height: 30px; padding: 3px 6px; } .keyboard { gap: 0; } .key { font-size: clamp(1.1rem, 7vw, 1.85rem); min-height: 0; } .reset { min-height: 0; } }
+    @media (max-height: 540px) { .game { grid-template-rows: auto minmax(0, 1fr) minmax(132px, 42svh) minmax(32px, 8svh); padding: 4px 0 0; } .subtitle { display: none; } .topbar { min-height: 28px; } .timer strong { font-size: 1rem; } .numbers { height: auto; padding: 6px; } .current-frame { left: 6px; right: 6px; top: 6px; } .numbers::before, .numbers::after { left: 6px; right: 6px; } .panel { padding: 4px 7px; } .input { min-height: 28px; } .key { min-height: 0; } .reset { min-height: 0; } }
+    /* next2-ratio-adjust */
+
+    .game { grid-template-rows: auto minmax(270px, 1fr) minmax(150px, 36svh) minmax(40px, 7svh); }
+    .numbers { min-height: 238px; padding: 8px; }
+    .numbers::before, .numbers::after { left: 8px; right: 8px; }
+    .numbers::before { top: 8px; height: 16px; }
+    .numbers::after { bottom: 8px; height: 18px; }
+    .current-frame { height: 68px; left: 8px; right: 8px; top: 8px; }
+    .number-reel { gap: 7px; }
+    .number-reel.roll { transform: translateY(-75px); }
+    .number-card { grid-template-rows: 14px minmax(0, 1fr); height: 68px; padding: 4px 8px 6px; }
+    .number-card strong { font-size: 2.05rem; }
+    .number-card span { font-size: .6rem; }
+    @media (max-height: 720px) { .game { grid-template-rows: auto minmax(232px, 1fr) minmax(140px, 35svh) minmax(38px, 7svh); } .numbers { min-height: 202px; padding: 7px; } .numbers::before, .numbers::after { left: 7px; right: 7px; } .numbers::before { top: 7px; height: 14px; } .numbers::after { bottom: 7px; height: 16px; } .current-frame { height: 58px; left: 7px; right: 7px; top: 7px; } .number-reel { gap: 6px; } .number-reel.roll { transform: translateY(-64px); } .number-card { grid-template-rows: 1fr; height: 58px; padding: 4px 7px; } .number-card strong { font-size: 1.85rem; } .number-card span { display: none; } }
+    @media (max-height: 600px) { .game { grid-template-rows: auto minmax(198px, 1fr) minmax(124px, 34svh) minmax(34px, 7svh); } .numbers { min-height: 174px; padding: 6px; } .numbers::before, .numbers::after { left: 6px; right: 6px; } .numbers::before { top: 6px; height: 12px; } .numbers::after { bottom: 6px; height: 14px; } .current-frame { height: 50px; left: 6px; right: 6px; top: 6px; } .number-reel { gap: 6px; } .number-reel.roll { transform: translateY(-56px); } .number-card { height: 50px; padding: 3px 6px; } .number-card strong { font-size: 1.55rem; } }
+    @media (max-height: 540px) { .game { grid-template-rows: auto minmax(174px, 1fr) minmax(112px, 33svh) minmax(30px, 7svh); } .numbers { min-height: 154px; padding: 5px; } .numbers::before, .numbers::after { left: 5px; right: 5px; } .current-frame { height: 44px; left: 5px; right: 5px; top: 5px; } .number-reel { gap: 5px; } .number-reel.roll { transform: translateY(-49px); } .number-card { height: 44px; padding: 2px 5px; } .number-card strong { font-size: 1.35rem; } }
+    /* end-next2-ratio-adjust */
+
+    /* restore-keyboard-next1 */
+    .game { display: grid; grid-template-rows: auto 1fr auto auto; gap: 10px; height: min(100svh, 820px); max-width: 430px; padding: 14px 0; width: 100%; }
+    .topbar { min-height: 44px; padding-bottom: 0; }
+    .stage { align-content: center; display: grid; gap: 10px; grid-template-rows: none; min-height: 0; padding-bottom: 0; }
+    .numbers { height: 220px; min-height: 0; padding: 10px; }
+    .numbers::before, .numbers::after { left: 10px; right: 10px; }
+    .numbers::before { height: 20px; top: 10px; }
+    .numbers::after { bottom: 10px; height: 24px; }
+    .current-frame { height: 78px; left: 10px; right: 10px; top: 10px; }
+    .number-reel { gap: 10px; }
+    .number-reel.roll { transform: translateY(-88px); }
+    .number-card { grid-template-rows: 16px minmax(0, 1fr); height: 78px; padding: 5px 8px 7px; }
+    .number-card strong { font-size: 2.35rem; }
+    .number-card span { display: block; font-size: .64rem; }
+    .panel { gap: 8px; padding: 10px 14px; }
+    .status { font-size: .86rem; }
+    .input { font-size: clamp(1.05rem, 5.4vw, 1.65rem); min-height: 52px; padding: 6px 10px; }
+    .feedback { font-size: .9rem; min-height: 1.25em; }
+    .keyboard { align-self: auto; display: grid; gap: 8px; grid-template-columns: repeat(3, 1fr); grid-template-rows: none; min-height: 0; }
+    .key { background: var(--key); border: 0; border-radius: 8px; box-shadow: var(--shadow); font-size: clamp(1.35rem, 6.5vw, 1.9rem); min-height: 54px; }
+    .key:nth-child(1), .key:nth-child(3), .key:nth-child(10), .key:nth-child(12) { border-radius: 8px; }
+    .key.clear { background: var(--bad); }
+    .key.back { background: #596273; }
+    .reset { background: #263342; border-radius: 8px; box-shadow: none; font-size: inherit; min-height: 44px; padding: 0 16px; width: 100%; }
+    @media (max-height: 720px) { .game { gap: 8px; grid-template-rows: auto 1fr auto auto; height: min(100svh, 820px); padding: 9px 0; } .topbar { min-height: 40px; padding-bottom: 0; } .stage { gap: 8px; padding-bottom: 0; } .numbers { height: 190px; padding: 8px; } .numbers::before, .numbers::after { left: 8px; right: 8px; } .numbers::before { top: 8px; height: 16px; } .numbers::after { bottom: 8px; height: 20px; } .current-frame { height: 62px; left: 8px; right: 8px; top: 8px; } .number-reel { gap: 8px; } .number-reel.roll { transform: translateY(-70px); } .number-card { grid-template-rows: 14px minmax(0, 1fr); height: 62px; padding: 4px 8px 6px; } .number-card strong { font-size: 1.95rem; } .number-card span { display: block; font-size: .58rem; } .key { font-size: clamp(1.2rem, 6vw, 1.65rem); min-height: 42px; } .panel { gap: 6px; padding: 8px 12px; } .input { min-height: 42px; } .reset { min-height: 40px; } }
+    @media (max-height: 600px) { body { padding-left: 10px; padding-right: 10px; } .game { gap: 6px; grid-template-rows: auto 1fr auto auto; padding: 6px 0; } .topbar { min-height: 36px; } .timer { min-width: 92px; padding: 6px 8px; } .timer strong { font-size: 1.25rem; } .stage { gap: 6px; } .numbers { height: 154px; padding: 7px; } .numbers::before, .numbers::after { left: 7px; right: 7px; } .numbers::before { top: 7px; height: 14px; } .numbers::after { bottom: 7px; height: 18px; } .current-frame { height: 50px; left: 7px; right: 7px; top: 7px; } .number-reel { gap: 7px; } .number-reel.roll { transform: translateY(-57px); } .number-card { grid-template-rows: 1fr; height: 50px; padding: 4px 6px; } .number-card strong { font-size: 1.6rem; } .number-card span { display: none; } .panel { gap: 4px; padding: 6px 10px; } .status, .feedback { font-size: .78rem; } .input { font-size: clamp(.95rem, 4.8vw, 1.35rem); min-height: 36px; padding: 4px 8px; } .keyboard { gap: 6px; } .key { font-size: clamp(1.1rem, 5.8vw, 1.55rem); min-height: 36px; } .reset { min-height: 36px; } }
+    @media (max-height: 540px) { .game { gap: 5px; padding: 5px 0; } .subtitle { display: none; } .topbar { min-height: 32px; } .timer strong { font-size: 1.1rem; } .numbers { height: 138px; padding: 6px; } .current-frame { height: 44px; left: 6px; right: 6px; top: 6px; } .number-reel { gap: 6px; } .number-reel.roll { transform: translateY(-50px); } .number-card { height: 44px; padding: 3px 6px; } .number-card strong { font-size: 1.35rem; } .panel { gap: 3px; padding: 5px 8px; } .status, .feedback { font-size: .72rem; } .input { font-size: clamp(.86rem, 4.4vw, 1.2rem); min-height: 32px; padding: 3px 6px; } .keyboard { gap: 5px; } .key { min-height: 32px; } .reset { min-height: 32px; } }
+    /* end-restore-keyboard-next1 */
+
+    /* dense-keyboard-next1 */
+    .game { grid-template-rows: auto minmax(0, 1fr) minmax(180px, 42svh) minmax(44px, 8svh); gap: 0; height: 100svh; padding: 8px 0 0; }
+    .topbar { min-height: 40px; padding-bottom: 6px; }
+    .stage { align-content: stretch; display: grid; gap: 6px; grid-template-rows: minmax(0, 1fr) auto; min-height: 0; padding-bottom: 6px; }
+    .numbers { height: auto; min-height: 150px; padding: 8px; }
+    .numbers::before, .numbers::after { left: 8px; right: 8px; }
+    .numbers::before { top: 8px; height: 14px; }
+    .numbers::after { bottom: 8px; height: 16px; }
+    .current-frame { height: 60px; left: 8px; right: 8px; top: 8px; }
+    .number-reel { gap: 8px; }
+    .number-reel.roll { transform: translateY(-68px); }
+    .number-card { grid-template-rows: 14px minmax(0, 1fr); height: 60px; padding: 4px 8px 6px; }
+    .number-card strong { font-size: 1.9rem; }
+    .number-card span { display: block; font-size: .58rem; }
+    .panel { gap: 5px; padding: 8px 12px; }
+    .status { font-size: .8rem; }
+    .input { font-size: clamp(1rem, 5vw, 1.5rem); min-height: 40px; padding: 4px 8px; }
+    .feedback { font-size: .82rem; min-height: 1.1em; }
+    .keyboard { align-self: stretch; display: grid; gap: 0; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(4, 1fr); min-height: 0; }
+    .key { border: 1px solid rgba(255,255,255,.18); border-radius: 0; box-shadow: none; font-size: clamp(1.45rem, 8vw, 2.5rem); min-height: 0; }
+    .key:nth-child(1) { border-top-left-radius: 8px; }
+    .key:nth-child(3) { border-top-right-radius: 8px; }
+    .key:nth-child(10), .key:nth-child(12) { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+    .key.clear { background: var(--bad); }
+    .key.back { background: #596273; }
+    .reset { border-radius: 0 0 8px 8px; box-shadow: none; font-size: clamp(.9rem, 4vw, 1.05rem); min-height: 0; padding: 0 12px; }
+    @media (max-height: 720px) { .game { grid-template-rows: auto minmax(0, 1fr) minmax(164px, 42svh) minmax(40px, 8svh); gap: 0; height: 100svh; padding: 6px 0 0; } .topbar { min-height: 36px; padding-bottom: 4px; } .stage { gap: 5px; padding-bottom: 5px; } .numbers { height: auto; min-height: 132px; padding: 7px; } .current-frame { height: 52px; left: 7px; right: 7px; top: 7px; } .number-reel { gap: 7px; } .number-reel.roll { transform: translateY(-59px); } .number-card { grid-template-rows: 1fr; height: 52px; padding: 4px 7px; } .number-card strong { font-size: 1.65rem; } .number-card span { display: none; } .panel { gap: 4px; padding: 6px 10px; } .input { min-height: 34px; } .keyboard { gap: 0; } .key { font-size: clamp(1.25rem, 7.5vw, 2.1rem); min-height: 0; } .reset { min-height: 0; } }
+    @media (max-height: 600px) { body { padding-left: 10px; padding-right: 10px; } .game { grid-template-rows: auto minmax(0, 1fr) minmax(148px, 42svh) minmax(36px, 8svh); gap: 0; padding: 5px 0 0; } .topbar { min-height: 32px; padding-bottom: 3px; } .title { font-size: .9rem; } .timer { min-width: 86px; padding: 5px 7px; } .timer strong { font-size: 1.15rem; } .stage { gap: 4px; padding-bottom: 4px; } .numbers { height: auto; min-height: 112px; padding: 6px; } .current-frame { height: 44px; left: 6px; right: 6px; top: 6px; } .number-reel { gap: 6px; } .number-reel.roll { transform: translateY(-50px); } .number-card { height: 44px; padding: 3px 6px; } .number-card strong { font-size: 1.35rem; } .panel { gap: 3px; padding: 5px 8px; } .status, .feedback { font-size: .72rem; } .input { font-size: clamp(.86rem, 4.4vw, 1.2rem); min-height: 30px; padding: 3px 6px; } .keyboard { gap: 0; } .key { font-size: clamp(1.1rem, 7vw, 1.85rem); min-height: 0; } .reset { min-height: 0; } }
+    @media (max-height: 540px) { .game { grid-template-rows: auto minmax(0, 1fr) minmax(132px, 42svh) minmax(32px, 8svh); padding: 4px 0 0; } .subtitle { display: none; } .topbar { min-height: 28px; } .timer strong { font-size: 1rem; } .numbers { min-height: 98px; padding: 5px; } .current-frame { height: 38px; left: 5px; right: 5px; top: 5px; } .number-reel { gap: 5px; } .number-reel.roll { transform: translateY(-43px); } .number-card { height: 38px; padding: 2px 5px; } .number-card strong { font-size: 1.2rem; } .input { min-height: 28px; } .key { min-height: 0; } .reset { min-height: 0; } }
+    /* end-dense-keyboard-next1 */
+
+    /* fit-problem-number */
+    .number-card { padding: 2px 8px 4px; }
+    .number-card strong { font-size: clamp(2.35rem, 12vw, 3.05rem); line-height: 1; }
+    .number-card.current strong { font-size: clamp(2.55rem, 13vw, 3.25rem); }
+    .number-card span { line-height: .95; }
+    @media (max-height: 720px) { .number-card { padding: 2px 7px 3px; } .number-card strong, .number-card.current strong { font-size: clamp(2rem, 11vw, 2.65rem); } }
+    @media (max-height: 600px) { .number-card { padding: 1px 6px 2px; } .number-card strong, .number-card.current strong { font-size: clamp(1.65rem, 9.8vw, 2.15rem); } }
+    @media (max-height: 540px) { .number-card { padding: 1px 5px; } .number-card strong, .number-card.current strong { font-size: clamp(1.42rem, 8.8vw, 1.85rem); } }
+    /* end-fit-problem-number */
+
+    /* fill-problem-frame */
+    .numbers { padding: 0; }
+    .numbers::before, .numbers::after { display: none; }
+    .current-frame { height: 50%; left: 0; right: 0; top: 0; }
+    .number-reel { gap: 0; height: 100%; }
+    .number-reel.extra { height: 150%; }
+    .number-reel.roll { transform: translateY(-33.333%); }
+    .number-card { border-radius: 0; border-left: 0; border-right: 0; height: auto; min-height: 0; }
+    .number-card:first-child { border-top: 0; }
+    .number-card:nth-child(2) { border-bottom: 0; }
+    .number-card.current { border-bottom: 1px solid #ddd6c8; }
+    .number-card strong { font-size: clamp(2.5rem, 13vw, 3.35rem); }
+    .number-card.current strong { font-size: clamp(2.75rem, 14vw, 3.65rem); }
+    @media (max-height: 720px) { .current-frame { height: 50%; left: 0; right: 0; top: 0; } .number-reel { gap: 0; } .number-reel.extra { height: 150%; } .number-reel.roll { transform: translateY(-33.333%); } .number-card { height: auto; } .number-card strong, .number-card.current strong { font-size: clamp(2.1rem, 12vw, 2.85rem); } }
+    @media (max-height: 600px) { .current-frame { height: 50%; left: 0; right: 0; top: 0; } .number-card strong, .number-card.current strong { font-size: clamp(1.75rem, 10.5vw, 2.35rem); } }
+    @media (max-height: 540px) { .current-frame { height: 50%; left: 0; right: 0; top: 0; } .number-card strong, .number-card.current strong { font-size: clamp(1.5rem, 9.5vw, 2rem); } }
+    /* end-fill-problem-frame */
+
+    /* frame-label-key-fix */
+    .numbers { border-radius: 8px; padding: 0; }
+    .current-frame { border-radius: 0; height: 50%; left: 0; right: 0; top: 0; }
+    .number-reel { gap: 0; height: 100%; }
+    .number-reel.extra { height: 150%; }
+    .number-reel.roll { transform: translateY(-33.333%); }
+    .number-card { align-items: stretch; border-left: 0; border-right: 0; border-radius: 0; display: grid; grid-template-rows: minmax(0, 1fr); height: auto; min-height: 0; overflow: hidden; padding: 0 8px; position: relative; }
+    .number-card.current { border-bottom: 1px solid #ddd6c8; }
+    .number-card span { background: rgba(255,255,255,.9); border-radius: 0; font-size: .58rem; left: 8px; line-height: 1; padding: 2px 4px; position: absolute; top: 4px; z-index: 1; }
+    .number-card strong { align-self: center; display: block; font-size: clamp(2.35rem, 11.5vw, 3.05rem); line-height: 1; padding-top: .12em; text-align: center; width: 100%; }
+    .number-card.current strong { font-size: clamp(2.5rem, 12.5vw, 3.25rem); }
+    .keyboard .key, .key:nth-child(1), .key:nth-child(3), .key:nth-child(10), .key:nth-child(12) { border-radius: 0; }
+    .reset { border-radius: 0; }
+    @media (max-height: 720px) { .current-frame { height: 50%; left: 0; right: 0; top: 0; } .number-card { padding: 0 7px; } .number-card span { display: none; } .number-card strong, .number-card.current strong { font-size: clamp(2rem, 10.5vw, 2.65rem); padding-top: 0; } .keyboard .key, .key:nth-child(1), .key:nth-child(3), .key:nth-child(10), .key:nth-child(12), .reset { border-radius: 0; } }
+    @media (max-height: 600px) { .current-frame { height: 50%; left: 0; right: 0; top: 0; } .number-card { padding: 0 6px; } .number-card strong, .number-card.current strong { font-size: clamp(1.65rem, 9.4vw, 2.2rem); } }
+    @media (max-height: 540px) { .current-frame { height: 50%; left: 0; right: 0; top: 0; } .number-card { padding: 0 5px; } .number-card strong, .number-card.current strong { font-size: clamp(1.4rem, 8.4vw, 1.85rem); } }
+    /* end-frame-label-key-fix */
+
+    /* rounded-problem-cards */
+    .numbers { padding: 6px; }
+    .current-frame { border-radius: 8px; height: calc((100% - 6px) / 2); left: 6px; right: 6px; top: 6px; }
+    .number-reel { gap: 6px; height: 100%; }
+    .number-reel.extra { height: calc(150% + 6px); }
+    .number-reel.roll { transform: translateY(calc((-100% + 6px) / 3)); }
+    .number-card { border: 1px solid #ddd6c8; border-radius: 8px; }
+    .number-card.current { border-bottom: 1px solid #ddd6c8; }
+    @media (max-height: 720px) { .numbers { padding: 5px; } .current-frame { border-radius: 8px; height: calc((100% - 5px) / 2); left: 5px; right: 5px; top: 5px; } .number-reel { gap: 5px; } .number-reel.extra { height: calc(150% + 5px); } .number-reel.roll { transform: translateY(calc((-100% + 5px) / 3)); } .number-card { border-radius: 8px; } }
+    @media (max-height: 600px) { .numbers { padding: 4px; } .current-frame { border-radius: 8px; height: calc((100% - 4px) / 2); left: 4px; right: 4px; top: 4px; } .number-reel { gap: 4px; } .number-reel.extra { height: calc(150% + 4px); } .number-reel.roll { transform: translateY(calc((-100% + 4px) / 3)); } }
+    @media (max-height: 540px) { .numbers { padding: 4px; } .current-frame { height: calc((100% - 4px) / 2); left: 4px; right: 4px; top: 4px; } .number-reel { gap: 4px; } .number-reel.extra { height: calc(150% + 4px); } .number-reel.roll { transform: translateY(calc((-100% + 4px) / 3)); } }
+    /* end-rounded-problem-cards */
+
+    /* no-extra-shadows */
+    :root { --shadow: none; }
+    .timer, .numbers, .panel, .key, .reset, .start-card, .result { box-shadow: none; }
+    .current-frame { box-shadow: none; }
+    /* end-no-extra-shadows */
+
+    /* rules-tab-panel */
+    .start-overlay { position: fixed; }
+    .rules-tab { background: var(--accent); border-radius: 8px; font-size: .9rem; min-height: 40px; padding: 0 14px; position: absolute; right: 16px; top: 16px; z-index: 7; }
+    .rules-panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; color: var(--ink); display: none; gap: 10px; inset: 16px; line-height: 1.55; max-width: 560px; overflow: auto; padding: 46px 18px 18px; position: absolute; text-align: left; z-index: 8; }
+    .rules-panel.show { display: grid; }
+    .rules-panel h2 { font-size: 1.2rem; line-height: 1.2; margin: 0; }
+    .rules-panel p { color: #394150; font-size: .9rem; font-weight: 700; margin: 0; }
+    .rules-close { background: #596273; border-radius: 8px; font-size: 1.05rem; height: 34px; min-height: 34px; padding: 0; position: absolute; right: 10px; top: 10px; width: 34px; }
+    @media (max-height: 600px) { .rules-tab { min-height: 34px; right: 12px; top: 12px; } .rules-panel { inset: 10px; padding: 42px 14px 14px; } .rules-panel p { font-size: .82rem; line-height: 1.45; } }
+    /* end-rules-tab-panel */
+
+    /* hide-top-title */
+    .brand { min-width: 1px; }
+    .title, .subtitle { display: none; }
+    .topbar { justify-content: flex-end; }
+    /* end-hide-top-title */
+
+    /* browser-scale-fix */
+    body { padding-left: max(10px, env(safe-area-inset-left)); padding-right: max(10px, env(safe-area-inset-right)); }
+    .game { max-width: min(96vw, 640px); width: min(96vw, 640px); }
+    @media (max-width: 520px) { .game { max-width: 100%; width: 100%; } }
+    @media (min-width: 700px) and (min-height: 720px) { .game { max-width: 640px; } .timer strong { font-size: 1.7rem; } .status { font-size: .95rem; } .feedback { font-size: .95rem; } .input { font-size: 1.75rem; } .key { font-size: 2.35rem; } .reset { font-size: 1.08rem; } }
+    /* end-browser-scale-fix */
+
+    /* mobile-layout-fix */
+    @media (max-width: 520px) {
+      html, body { width: 100%; min-height: 100svh; overflow: hidden; }
+      body { align-items: stretch; justify-content: center; padding: env(safe-area-inset-top) 8px env(safe-area-inset-bottom); }
+      .game { height: 100svh; max-width: 100%; width: 100%; grid-template-rows: 36px minmax(0, 1fr) minmax(188px, 42svh) minmax(38px, 8svh); padding: 5px 0 0; }
+      .topbar { min-height: 32px; padding: 0; }
+      .timer { min-width: 92px; padding: 6px 8px; }
+      .timer strong { font-size: 1.25rem; }
+      .stage { gap: 5px; grid-template-rows: minmax(0, 1fr) auto; padding-bottom: 5px; }
+      .numbers { min-height: 118px; padding: 5px; }
+      .current-frame { height: calc((100% - 5px) / 2); left: 5px; right: 5px; top: 5px; }
+      .number-reel { gap: 5px; height: 100%; }
+      .number-reel.extra { height: calc(150% + 5px); }
+      .number-reel.roll { transform: translateY(calc((-100% + 5px) / 3)); }
+      .number-card { padding: 0 6px; }
+      .number-card span { display: none; }
+      .number-card strong, .number-card.current strong { font-size: clamp(1.7rem, 13vw, 2.35rem); padding-top: 0; }
+      .panel { gap: 4px; padding: 6px 8px; }
+      .status, .feedback { font-size: .76rem; }
+      .input { font-size: clamp(1rem, 5.6vw, 1.45rem); min-height: 34px; padding: 3px 6px; }
+      .keyboard { gap: 0; grid-template-rows: repeat(4, 1fr); min-height: 0; }
+      .key { font-size: clamp(1.35rem, 9vw, 2.05rem); min-height: 0; }
+      .reset { font-size: .95rem; min-height: 0; padding: 0 8px; }
+      .rules-tab { min-height: 34px; right: 10px; top: 10px; }
+      .rules-panel { inset: 10px; padding: 42px 14px 14px; }
+      .rules-panel p { font-size: .84rem; line-height: 1.45; }
+    }
+    @media (max-width: 380px) and (max-height: 700px) {
+      .game { grid-template-rows: 32px minmax(0, 1fr) minmax(164px, 41svh) minmax(34px, 8svh); }
+      .topbar { min-height: 28px; }
+      .timer strong { font-size: 1.1rem; }
+      .numbers { min-height: 104px; padding: 4px; }
+      .current-frame { height: calc((100% - 4px) / 2); left: 4px; right: 4px; top: 4px; }
+      .number-reel { gap: 4px; }
+      .number-reel.extra { height: calc(150% + 4px); }
+      .number-reel.roll { transform: translateY(calc((-100% + 4px) / 3)); }
+      .number-card strong, .number-card.current strong { font-size: clamp(1.45rem, 12vw, 2rem); }
+      .panel { padding: 5px 7px; }
+      .input { min-height: 30px; }
+      .key { font-size: clamp(1.15rem, 8vw, 1.75rem); }
+    }
+    /* end-mobile-layout-fix */
+
+
+    /* last-question-align-fix */
+    .number-reel { grid-template-rows: repeat(2, minmax(0, 1fr)); }
+    .number-reel.extra { grid-template-rows: repeat(3, minmax(0, 1fr)); }
+    .number-card { height: auto; }
+    /* end-last-question-align-fix */
+
+
+    /* reliable-fast-tap */
+    .keyboard, .keyboard *, .key {
+      touch-action: none !important;
+      -ms-touch-action: none !important;
+    }
+    .key { cursor: pointer; }
+    /* end-reliable-fast-tap */
+
+    /* tight-keyboard-hitbox */
+    .keyboard { border: 0; overflow: hidden; }
+    .key { margin: 0; }
+    /* end-tight-keyboard-hitbox */
+
+
+    /* restart-top-keyboard-fill */
+    .game { grid-template-rows: 40px minmax(0, 1fr) minmax(226px, 50svh); gap: 0; height: 100svh; padding: 6px 0 0; }
+    .topbar { align-items: center; display: flex; justify-content: space-between; min-height: 36px; padding: 0 0 6px; }
+    .top-reset { align-self: stretch; background: #263342; border: 0; border-radius: 8px; color: #f8fafc; font-size: .86rem; font-weight: 900; letter-spacing: 0; min-height: 0; padding: 0 12px; width: auto; }
+    .timer { align-self: stretch; display: flex; align-items: center; }
+    .keyboard { align-self: stretch; display: grid; gap: 0; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(4, minmax(0, 1fr)); min-height: 0; }
+    .key { min-height: 0; }
+    .keyboard .key, .key:nth-child(1), .key:nth-child(3), .key:nth-child(10), .key:nth-child(12) { border-radius: 0; }
+    @media (max-width: 520px) { .game { grid-template-rows: 36px minmax(0, 1fr) minmax(226px, 50svh); max-width: 100%; width: 100%; padding: 5px 0 0; } .topbar { min-height: 32px; padding-bottom: 4px; } .top-reset { border-radius: 8px; font-size: .78rem; padding: 0 10px; } .keyboard { gap: 0; } }
+    @media (max-height: 700px) { .game { grid-template-rows: 34px minmax(0, 1fr) minmax(206px, 50svh); padding-top: 4px; } .topbar { min-height: 30px; padding-bottom: 4px; } .top-reset { font-size: .74rem; padding: 0 9px; } }
+    @media (max-height: 600px) { .game { grid-template-rows: 32px minmax(0, 1fr) minmax(186px, 50svh); } .topbar { min-height: 28px; } .top-reset { font-size: .7rem; padding: 0 8px; } }
+    /* end-restart-top-keyboard-fill */
+
+
+    /* focus-outline-reset */
+    *:focus {
+      outline: none;
+    }
+    /* end-focus-outline-reset */
+
   </style>
 </head>
 <body>
-  <main class="game" aria-label="&#32032;&#22240;&#25968;&#20998;&#35299; Lv1">
-    <header class="topbar"><div class="brand"><div class="title">Factor Sprint</div><div class="subtitle">Lv1 / &#12493;&#12463;&#12473;&#12488;2</div></div><div class="timer" aria-live="polite"><strong id="timer">0.00</strong><span>&#31186;</span></div></header>
-    <section class="stage"><section class="numbers" id="numbers" aria-label="&#12493;&#12463;&#12473;&#12488;2"><div class="current-frame" aria-hidden="true"></div></section><section class="panel"><div class="status" id="status">&#31532;1&#21839; / 20</div><div class="input empty" id="input" aria-live="polite">&#20837;&#21147;</div><div class="feedback" id="feedback" aria-live="polite">&#32032;&#22240;&#25968;&#12434;&#20837;&#21147;</div></section></section>
-    <section class="keyboard" aria-label="&#20837;&#21147;&#12461;&#12540;&#12508;&#12540;&#12489;"><button class="key" data-key="7" type="button">7</button><button class="key" data-key="8" type="button">8</button><button class="key" data-key="9" type="button">9</button><button class="key" data-key="4" type="button">4</button><button class="key" data-key="5" type="button">5</button><button class="key" data-key="6" type="button">6</button><button class="key" data-key="1" type="button">1</button><button class="key" data-key="2" type="button">2</button><button class="key" data-key="3" type="button">3</button><button class="key back" data-key="B" type="button">B</button><button class="key" data-key="0" type="button">0</button><button class="key clear" data-key="AC" type="button">AC</button></section>
-    <button class="reset" id="resetButton" type="button">&#26032;&#12375;&#12356;20&#21839;&#12391;&#12522;&#12473;&#12479;&#12540;&#12488;</button>
+  <main class="game" aria-label="二重素因数分解">
+    <header class="topbar"><button class="reset top-reset" id="resetButton" type="button">restart</button><div class="timer" aria-live="polite"><strong id="timer">0.00</strong><span>秒</span></div></header>
+    <section class="stage"><section class="numbers" id="numbers" aria-label="ネクスト1"><div class="current-frame" aria-hidden="true"></div></section><section class="panel"><div class="status" id="status">第1問 / 20</div><div class="input empty" id="input" aria-live="polite">入力</div><div class="feedback" id="feedback" aria-live="polite">素因数を入力</div></section></section>
+    <section class="keyboard" aria-label="素因数分解ジェネラルキーボード"><button class="key" data-key="7" type="button">7</button><button class="key" data-key="8" type="button">8</button><button class="key" data-key="9" type="button">9</button><button class="key" data-key="4" type="button">4</button><button class="key" data-key="5" type="button">5</button><button class="key" data-key="6" type="button">6</button><button class="key" data-key="1" type="button">1</button><button class="key" data-key="2" type="button">2</button><button class="key" data-key="3" type="button">3</button><button class="key back" data-key="B" type="button">B</button><button class="key" data-key="0" type="button">0</button><button class="key clear" data-key="AC" type="button">AC</button></section>
   </main>
-  <div class="start-overlay show" id="startOverlay" role="dialog" aria-modal="true" aria-labelledby="startTitle"><div class="start-card"><h2 id="startTitle">Factor Sprint Lv1</h2><p>&#12473;&#12479;&#12540;&#12488;&#12391;20&#21839;&#12479;&#12452;&#12512;&#12450;&#12479;&#12483;&#12463;&#38283;&#22987;</p><button class="start-button" id="startButton" type="button">&#12473;&#12479;&#12540;&#12488;</button></div></div>
-  <div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="resultTitle"><div class="result"><h2 id="resultTitle">&#12463;&#12522;&#12450;&#65281;</h2><div class="result-time" id="resultTime">0.00</div><p id="resultDetail"></p><button class="reset" id="againButton" type="button">&#12418;&#12358;&#19968;&#24230;&#12503;&#12524;&#12452;</button></div></div>
+  <div class="start-overlay show" id="startOverlay" role="dialog" aria-modal="true" aria-labelledby="startTitle">
+    <button class="rules-tab" id="rulesTab" type="button">ルール</button>
+    <div class="start-card"><h2 id="startTitle">二重素因数分解</h2><p>スタートで20問タイムアタック開始</p><button class="start-button" id="startButton" type="button">スタート</button></div>
+    <section class="rules-panel" id="rulesPanel" aria-label="ルール説明" aria-hidden="true">
+      <button class="rules-close" id="rulesClose" type="button" aria-label="ルール説明を閉じる">×</button>
+      <h2>ルール説明</h2>
+      <p>このゲームは、表示された数をそのまま素因数分解するのではなく、一度変換してから答える二重素因数分解ゲームです。</p>
+      <p>まず、画面に出題される数を N1 とします。N1 を素因数分解して、出てきた素因数を小さい順に並べます。</p>
+      <p>例: N1 = 60 のとき、60 = 2 × 2 × 3 × 5 です。この素因数を掛け算記号なしでつなげて、N2 = 2235 とします。</p>
+      <p>プレイヤーが答えるのは、最初の N1 の素因数ではなく、N2 を素因数分解した結果です。2235 = 3 × 5 × 149 なので、答えは 3, 5, 149 です。</p>
+      <p>入力は素因数を続けて数字で入力します。順番は入れ替えても正解ですが、2桁以上の素因数は連続して入力する必要があります。</p>
+      <p>全20問で、9 < N1 < 200、9 < N2 < 1000 を満たす問題だけが出題されます。N2 が素数になる問題は出題されません。同じ N1 は1回のプレイ中に重複して出題されません。スコアは20問を解き終えるまでのタイムです。</p>
+    </section>
+  </div>
+  <div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="resultTitle"><div class="result"><h2 id="resultTitle">クリア！</h2><div class="result-time" id="resultTime">0.00</div><p id="resultDetail"></p><button class="reset" id="againButton" type="button">もう一度プレイ</button></div></div>
   <script>
     const totalQuestions = 20;
     const minNumber = 10;
-    const maxNumber = 99;
+    const maxNumber = 199;
+    const maxInputLength = 14;
     const numbersEl = document.querySelector("#numbers");
     const statusEl = document.querySelector("#status");
     const feedbackEl = document.querySelector("#feedback");
@@ -80,6 +364,9 @@
     const resetButton = document.querySelector("#resetButton");
     const startOverlay = document.querySelector("#startOverlay");
     const startButton = document.querySelector("#startButton");
+    const rulesTab = document.querySelector("#rulesTab");
+    const rulesPanel = document.querySelector("#rulesPanel");
+    const rulesClose = document.querySelector("#rulesClose");
     const overlay = document.querySelector("#overlay");
     const resultTimeEl = document.querySelector("#resultTime");
     const resultDetailEl = document.querySelector("#resultDetail");
@@ -88,35 +375,49 @@
     let questions = [];
     let currentIndex = 0;
     let inputValue = "";
-    let mistakes = 0;
     let startedAt = 0;
     let finishedAt = 0;
     let timerFrame = 0;
     let isPlaying = false;
     let locked = true;
     let gameStarted = false;
+    let inputQueue = [];
+    let processingInputQueue = false;
+    let lastTouchAt = 0;
     function isPrime(value) { if (value < 2) return false; if (value === 2) return true; if (value % 2 === 0) return false; const limit = Math.floor(Math.sqrt(value)); for (let divisor = 3; divisor <= limit; divisor += 2) { if (value % divisor === 0) return false; } return true; }
     function factorize(value) { const factors = []; let rest = value; for (let divisor = 2; divisor <= rest; divisor += 1) { while (rest % divisor === 0) { factors.push(divisor); rest = rest / divisor; } } return factors; }
-    function buildQuestionPool() { const pool = []; for (let value = minNumber; value <= maxNumber; value += 1) { if (!isPrime(value)) { const factors = factorize(value); if (factors.length > 1) pool.push({ value, factors, answerLength: factors.map(String).join("").length }); } } return pool; }
-    function buildQuestions() { const list = []; let last = null; while (list.length < totalQuestions) { const next = questionPool[Math.floor(Math.random() * questionPool.length)]; if (next.value !== last) { list.push(next); last = next.value; } } return list; }
+    function buildQuestionPool() { const pool = []; for (let value = minNumber; value <= maxNumber; value += 1) { if (isPrime(value)) continue; const pFactors = factorize(value); if (pFactors.length < 2) continue; const n2 = Number(pFactors.map(String).join("")); if (n2 <= 9 || n2 >= 1000) continue; if (isPrime(n2)) continue; const qFactors = factorize(n2); if (qFactors.length < 2) continue; pool.push({ value, pFactors, n2, factors: qFactors, answerLength: qFactors.map(String).join("").length }); } return pool; }
+    function shuffleList(list) { const shuffled = list.slice(); for (let i = shuffled.length - 1; i > 0; i -= 1) { const j = Math.floor(Math.random() * (i + 1)); [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]; } return shuffled; }
+    function pickFromBand(minExclusive, maxExclusive, count) { const band = questionPool.filter((question) => question.value > minExclusive && question.value < maxExclusive); return shuffleList(band).slice(0, count); }
+    function buildQuestions() { return shuffleList(questionPool).slice(0, totalQuestions); }
     function canReadAsFactors(text, factors) { const used = Array(factors.length).fill(false); const factorStrings = factors.map(String); function search(position) { if (position === text.length) return used.every(Boolean); for (let i = 0; i < factorStrings.length; i += 1) { if (used[i]) continue; const factor = factorStrings[i]; if (text.slice(position, position + factor.length) === factor) { used[i] = true; if (search(position + factor.length)) return true; used[i] = false; } } return false; } return search(0); }
-    function makeCard(question, offset) { const card = document.createElement("div"); card.className = "number-card " + (offset === 0 ? "current" : "next"); const label = document.createElement("span"); label.textContent = offset === 0 ? "\u73fe\u5728\u306e\u554f\u984c" : "\u6b21\u306e\u554f\u984c"; const value = document.createElement("strong"); value.textContent = question ? String(question.value) : "-"; card.appendChild(label); card.appendChild(value); return card; }
-    function renderReel(includeExtra) { const reel = document.createElement("div"); reel.className = "number-reel"; const count = includeExtra ? 4 : 3; for (let offset = 0; offset < count; offset += 1) { const index = currentIndex + offset; if (index < totalQuestions) reel.appendChild(makeCard(questions[index], offset)); } const frame = document.createElement("div"); frame.className = "current-frame"; frame.setAttribute("aria-hidden", "true"); numbersEl.replaceChildren(reel, frame); }
+    function makeCard(question, offset) { const card = document.createElement("div"); card.className = "number-card " + (offset === 0 ? "current" : "next"); const label = document.createElement("span"); label.textContent = offset === 0 ? "現在の問題" : "次の問題"; const value = document.createElement("strong"); value.textContent = question ? String(question.value) : "-"; card.appendChild(label); card.appendChild(value); return card; }
+    function renderReel(includeExtra) { const reel = document.createElement("div"); reel.className = "number-reel" + (includeExtra ? " extra" : ""); const count = includeExtra ? 3 : 2; for (let offset = 0; offset < count; offset += 1) { const index = currentIndex + offset; if (index < totalQuestions) reel.appendChild(makeCard(questions[index], offset)); } const frame = document.createElement("div"); frame.className = "current-frame"; frame.setAttribute("aria-hidden", "true"); numbersEl.replaceChildren(reel, frame); }
     function rollReel() { const reel = numbersEl.querySelector(".number-reel"); if (!reel) return Promise.resolve(); reel.classList.add("roll"); return new Promise((resolve) => { reel.addEventListener("transitionend", resolve, { once: true }); setTimeout(resolve, 75); }); }
-    function renderInput() { inputEl.textContent = inputValue || "\u5165\u529b"; inputEl.classList.toggle("empty", inputValue.length === 0); }
+    function renderInput() { inputEl.textContent = inputValue || "入力"; inputEl.classList.toggle("empty", inputValue.length === 0); }
     function updateTimer() { if (!isPlaying) return; const elapsed = (performance.now() - startedAt) / 1000; timerEl.textContent = elapsed.toFixed(2); timerFrame = requestAnimationFrame(updateTimer); }
     function startTimer() { if (startedAt) return; startedAt = performance.now(); isPlaying = true; updateTimer(); }
     function startGame() { if (gameStarted) return; gameStarted = true; locked = false; startOverlay.classList.remove("show"); startTimer(); showQuestion(); }
-    function showQuestion() { statusEl.textContent = "\u7b2c" + (currentIndex + 1) + "\u554f / " + totalQuestions; inputValue = ""; renderInput(); renderReel(false); }
-    function showWaitingScreen() { statusEl.textContent = "\u30b9\u30bf\u30fc\u30c8\u5f85\u3061"; inputValue = ""; renderInput(); numbersEl.replaceChildren(); }
-    function checkCurrentInput() { const question = questions[currentIndex]; if (!question) return false; if (inputValue.length === question.answerLength && canReadAsFactors(inputValue, question.factors)) return true; if (inputValue.length > question.answerLength) { feedbackEl.textContent = "B\u3067\u4fee\u6b63"; feedbackEl.className = "feedback no"; } return false; }
-    function handleKey(key) { if (!gameStarted || locked || currentIndex >= totalQuestions) return; if (key === "B") { inputValue = inputValue.slice(0, -1); renderInput(); feedbackEl.textContent = "\u7d20\u56e0\u6570\u3092\u5165\u529b"; feedbackEl.className = "feedback"; return; } if (key === "AC") { inputValue = ""; renderInput(); feedbackEl.textContent = "\u7d20\u56e0\u6570\u3092\u5165\u529b"; feedbackEl.className = "feedback"; return; } if (/^[0-9]$/.test(key) && inputValue.length < 8) { inputValue += key; renderInput(); if (checkCurrentInput()) advanceQuestion(); } }
-    async function advanceQuestion() { if (locked || currentIndex >= totalQuestions) return; locked = true; feedbackEl.textContent = "\u6b63\u89e3"; feedbackEl.className = "feedback ok"; renderReel(true); await rollReel(); currentIndex += 1; if (currentIndex >= totalQuestions) finishGame(); else showQuestion(); locked = false; }
-    function finishGame() { isPlaying = false; cancelAnimationFrame(timerFrame); finishedAt = performance.now(); const elapsed = (finishedAt - startedAt) / 1000; const penalty = mistakes * 1.5; const finalTime = elapsed + penalty; timerEl.textContent = elapsed.toFixed(2); resultTimeEl.textContent = finalTime.toFixed(2) + "\u79d2"; resultDetailEl.textContent = "\u5b9f\u30bf\u30a4\u30e0 " + elapsed.toFixed(2) + "\u79d2 / \u30df\u30b9 " + mistakes + "\u56de / \u30da\u30ca\u30eb\u30c6\u30a3 " + penalty.toFixed(1) + "\u79d2"; overlay.classList.add("show"); againButton.focus(); }
-    function resetGame() { cancelAnimationFrame(timerFrame); questionPool = buildQuestionPool(); questions = buildQuestions(); currentIndex = 0; inputValue = ""; mistakes = 0; startedAt = 0; finishedAt = 0; isPlaying = false; locked = true; gameStarted = false; timerEl.textContent = "0.00"; feedbackEl.textContent = "\u7d20\u56e0\u6570\u3092\u5165\u529b"; feedbackEl.className = "feedback"; overlay.classList.remove("show"); startOverlay.classList.add("show"); showWaitingScreen(); }
-    function bindKey(button) { const key = button.dataset.key; button.addEventListener("pointerdown", (event) => { event.preventDefault(); handleKey(key); }); button.addEventListener("click", (event) => { event.preventDefault(); if (event.detail === 0) handleKey(key); }); }
+    function showQuestion() { statusEl.textContent = "第" + (currentIndex + 1) + "問 / " + totalQuestions; inputValue = ""; renderInput(); renderReel(false); }
+    function showWaitingScreen() { statusEl.textContent = "スタート待ち"; inputValue = ""; renderInput(); numbersEl.replaceChildren(); }
+    function checkCurrentInput() { const question = questions[currentIndex]; if (!question) return false; if (inputValue.length === question.answerLength && canReadAsFactors(inputValue, question.factors)) return true; if (inputValue.length > question.answerLength) { feedbackEl.textContent = "BかACで修正"; feedbackEl.className = "feedback no"; } return false; }
+    function applyKey(key) { if (!gameStarted || locked || currentIndex >= totalQuestions) return false; if (key === "B") { inputValue = inputValue.slice(0, -1); renderInput(); feedbackEl.textContent = "素因数を入力"; feedbackEl.className = "feedback"; return false; } if (key === "AC") { inputValue = ""; renderInput(); feedbackEl.textContent = "素因数を入力"; feedbackEl.className = "feedback"; return false; } if (/^[0-9]$/.test(key) && inputValue.length < maxInputLength) { inputValue += key; renderInput(); if (checkCurrentInput()) { advanceQuestion(); return true; } } return false; }
+    function processInputQueue() { if (processingInputQueue || locked) return; processingInputQueue = true; while (inputQueue.length > 0 && !locked) { const key = inputQueue.shift(); applyKey(key); } processingInputQueue = false; if (inputQueue.length > 0 && !locked) queueMicrotask(processInputQueue); }
+    function handleKey(key) { inputQueue.push(key); processInputQueue(); }
+    async function advanceQuestion() { if (locked || currentIndex >= totalQuestions) return; locked = true; feedbackEl.textContent = "正解"; feedbackEl.className = "feedback ok"; renderReel(true); await rollReel(); currentIndex += 1; if (currentIndex >= totalQuestions) finishGame(); else showQuestion(); locked = false; processInputQueue(); }
+    function finishGame() { isPlaying = false; cancelAnimationFrame(timerFrame); finishedAt = performance.now(); const elapsed = (finishedAt - startedAt) / 1000; timerEl.textContent = elapsed.toFixed(2); resultTimeEl.textContent = elapsed.toFixed(2) + "秒"; resultDetailEl.textContent = "20問クリア / 9<N1<200"; overlay.classList.add("show"); againButton.focus(); }
+    function resetGame() { cancelAnimationFrame(timerFrame); questionPool = buildQuestionPool(); questions = buildQuestions(); currentIndex = 0; inputValue = ""; inputQueue = []; processingInputQueue = false; startedAt = 0; finishedAt = 0; isPlaying = false; locked = true; gameStarted = false; timerEl.textContent = "0.00"; feedbackEl.textContent = "素因数を入力"; feedbackEl.className = "feedback"; overlay.classList.remove("show"); rulesPanel.classList.remove("show"); rulesPanel.setAttribute("aria-hidden", "true"); startOverlay.classList.add("show"); showWaitingScreen(); }
+
+
+    function keyFromPoint(x, y) { const keyboard = document.querySelector(".keyboard"); const rect = keyboard.getBoundingClientRect(); const inset = 1; if (x < rect.left - inset || x > rect.right + inset || y < rect.top - inset || y > rect.bottom + inset) return ""; const keys = [["7", "8", "9"], ["4", "5", "6"], ["1", "2", "3"], ["B", "0", "AC"]]; const clampedX = Math.min(Math.max(x, rect.left), rect.right - 0.01); const clampedY = Math.min(Math.max(y, rect.top), rect.bottom - 0.01); const column = Math.min(2, Math.max(0, Math.floor(((clampedX - rect.left) / rect.width) * 3))); const row = Math.min(3, Math.max(0, Math.floor(((clampedY - rect.top) / rect.height) * 4))); return keys[row][column]; }
+    function submitKeyboardKey(key) { if (!key) return; handleKey(key); }
+    function bindKeyboardSurface() { const keyboard = document.querySelector(".keyboard"); keyboard.addEventListener("touchstart", (event) => { event.preventDefault(); lastTouchAt = performance.now(); for (const touch of event.changedTouches) submitKeyboardKey(keyFromPoint(touch.clientX, touch.clientY)); }, { passive: false }); keyboard.addEventListener("pointerdown", (event) => { if (event.pointerType === "touch" || performance.now() - lastTouchAt < 350) { event.preventDefault(); return; } event.preventDefault(); submitKeyboardKey(keyFromPoint(event.clientX, event.clientY)); }, { passive: false }); keyboard.addEventListener("click", (event) => { event.preventDefault(); }, { passive: false }); }
+    function bindKey(button) { button.addEventListener("click", (event) => event.preventDefault(), { passive: false }); }
     document.querySelectorAll("[data-key]").forEach(bindKey);
+    bindKeyboardSurface();
     startButton.addEventListener("click", startGame);
+    rulesTab.addEventListener("click", () => { rulesPanel.classList.add("show"); rulesPanel.setAttribute("aria-hidden", "false"); });
+    rulesClose.addEventListener("click", () => { rulesPanel.classList.remove("show"); rulesPanel.setAttribute("aria-hidden", "true"); });
     resetButton.addEventListener("click", resetGame);
     againButton.addEventListener("click", resetGame);
     resetGame();
