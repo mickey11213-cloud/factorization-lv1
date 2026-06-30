@@ -335,6 +335,11 @@
     .key * { pointer-events: none; }
     /* end-pointer-button-input-fix */
 
+
+    /* game-wide-touch-anchor */
+    .game, .stage, .numbers, .panel { touch-action: none; }
+    /* end-game-wide-touch-anchor */
+
   </style>
 </head>
 <body>
@@ -363,6 +368,7 @@
     const minNumber = 10;
     const maxNumber = 199;
     const maxInputLength = 14;
+    const gameEl = document.querySelector(".game");
     const numbersEl = document.querySelector("#numbers");
     const statusEl = document.querySelector("#status");
     const feedbackEl = document.querySelector("#feedback");
@@ -419,10 +425,12 @@
 
 
     function submitKeyboardKey(key) { if (!key) return; handleKey(key); }
-    function bindKeyboardSurface() { const keyboard = document.querySelector(".keyboard"); keyboard.addEventListener("click", (event) => { event.preventDefault(); }, { passive: false }); }
-    function rememberTouch(touch, key) { if (activeTouchKeys.has(touch.identifier)) return false; activeTouchKeys.set(touch.identifier, key); return true; }
+    function keyFromPoint(x, y) { const keyboard = document.querySelector(".keyboard"); const target = document.elementFromPoint(x, y); const keyButton = target && target.closest ? target.closest("[data-key]") : null; if (!keyButton || !keyboard.contains(keyButton)) return ""; return keyButton.dataset.key || ""; }
+    function rememberTouch(touch) { const knownKey = activeTouchKeys.get(touch.identifier); if (knownKey) return; const key = keyFromPoint(touch.clientX, touch.clientY); if (key) { activeTouchKeys.set(touch.identifier, key); submitKeyboardKey(key); return; } if (!activeTouchKeys.has(touch.identifier)) activeTouchKeys.set(touch.identifier, ""); }
+    function scanGameTouches(event) { event.preventDefault(); lastTouchInputAt = performance.now(); const liveIds = new Set(); for (const touch of event.touches) { liveIds.add(touch.identifier); rememberTouch(touch); } for (const identifier of activeTouchKeys.keys()) { if (!liveIds.has(identifier)) activeTouchKeys.delete(identifier); } }
     function clearEndedTouches(event) { for (const touch of event.changedTouches) activeTouchKeys.delete(touch.identifier); }
-    function bindKey(button) { button.addEventListener("touchstart", (event) => { event.preventDefault(); lastTouchInputAt = performance.now(); for (const touch of event.changedTouches) { if (rememberTouch(touch, button.dataset.key)) submitKeyboardKey(button.dataset.key); } }, { passive: false }); button.addEventListener("touchend", clearEndedTouches, { passive: true }); button.addEventListener("touchcancel", clearEndedTouches, { passive: true }); button.addEventListener("mousedown", (event) => { event.preventDefault(); if (performance.now() - lastTouchInputAt < 450) return; lastMouseInputAt = performance.now(); submitKeyboardKey(button.dataset.key); }); button.addEventListener("click", (event) => { event.preventDefault(); if (performance.now() - lastTouchInputAt < 450) return; if (performance.now() - lastMouseInputAt > 120) submitKeyboardKey(button.dataset.key); }, { passive: false }); }
+    function bindKeyboardSurface() { const keyboard = document.querySelector(".keyboard"); gameEl.addEventListener("touchstart", scanGameTouches, { passive: false, capture: true }); gameEl.addEventListener("touchmove", scanGameTouches, { passive: false, capture: true }); gameEl.addEventListener("touchend", clearEndedTouches, { passive: true, capture: true }); gameEl.addEventListener("touchcancel", clearEndedTouches, { passive: true, capture: true }); keyboard.addEventListener("click", (event) => { event.preventDefault(); }, { passive: false }); }
+    function bindKey(button) { button.addEventListener("mousedown", (event) => { event.preventDefault(); if (performance.now() - lastTouchInputAt < 450) return; lastMouseInputAt = performance.now(); submitKeyboardKey(button.dataset.key); }); button.addEventListener("click", (event) => { event.preventDefault(); if (performance.now() - lastTouchInputAt < 450) return; if (performance.now() - lastMouseInputAt > 120) submitKeyboardKey(button.dataset.key); }, { passive: false }); }
     document.querySelectorAll("[data-key]").forEach(bindKey);
     bindKeyboardSurface();
     startButton.addEventListener("click", startGame);
